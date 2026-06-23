@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+import sys
+
+def parse_term(term):
+    
+    coef_part, x_part = term.split("*")
+    
+    coef = float(coef_part.strip())
+
+    x_part = x_part.strip()
+    power = int(x_part.split("^")[1])
+    
+    return power, coef
+
+def main():
+    if len(sys.argv) != 2:
+        print('Usage: ./computor "equation"')
+        return
+
+    equation = sys.argv[1]
+    if equation.count('=') != 1:
+        print("Syntax error: equation must contain exactly one '='")
+        return
+    
+    left, right = equation.split("=")
+
+    if left.strip() == "" or right.strip() == "":
+        print("Syntax error: empty side")
+        return
+
+    print("Equation:", equation)
+    print("Left side:", left.strip())
+    print("Right side:", right.strip())
+
+    # for i in range(len(left)):
+    #     print(parse_term(left[i]))
+        
+
+    left_poly = {}
+    right_poly = {}
+
+   
+if __name__ == "__main__":
+    main()
+
