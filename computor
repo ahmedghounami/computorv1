@@ -1,45 +1,127 @@
 #!/usr/bin/env python3
 import sys
 
+
 def parse_term(term):
-    
     coef_part, x_part = term.split("*")
-    
-    coef = float(coef_part.strip())
+
+    coef_part = coef_part.strip().replace(" ", "")
+    coef = float(coef_part)
 
     x_part = x_part.strip()
     power = int(x_part.split("^")[1])
-    
+
     return power, coef
 
-def main():
-    if len(sys.argv) != 2:
-        print('Usage: ./computor "equation"')
-        return
 
-    equation = sys.argv[1]
-    if equation.count('=') != 1:
+def parse_side(side):
+    poly = {}
+
+    side = side.replace("-", "+-")
+    terms = side.split("+")
+
+    for term in terms:
+        term = term.strip()
+
+        if term == "":
+            continue
+
+        power, coef = parse_term(term)
+        poly[power] = poly.get(power, 0) + coef
+        # poly.get(power, 0) used to get the existing key value without crashing if the key doesn't exist, and add the coefficient to it.
+        # print(f"poly.get(power, 0): {poly.get(power, 0)}, coef: {coef}, power: {power}")
+        print(f"Current polynomial: {poly}")
+        
+
+    return poly
+
+def reduce_equation(left_poly, right_poly):
+
+    reduced = {}
+
+    for power in left_poly:
+        reduced[power] = left_poly[power]
+
+    for power in right_poly:
+
+        if power in reduced:
+            reduced[power] = reduced[power] - right_poly[power]
+        else:
+            reduced[power] = -right_poly[power]
+    print(f"Reduced polynomial: {reduced}")
+    return reduced
+
+
+def get_degree(poly):
+    degree = 0
+
+    for power, coef in poly.items():
+        if coef != 0 and power > degree:
+            degree = power
+
+    return degree
+
+
+def format_number(number):
+    if number == int(number):
+        return str(int(number))
+    return str(number)
+
+
+def format_polynomial(poly):
+    parts = []
+
+    for power in sorted(poly.keys()):
+        coef = poly[power]
+
+        if coef == 0 and len(poly) > 1:
+            continue
+
+        coef_text = format_number(coef)
+
+        if not parts:
+            parts.append(f"{coef_text} * X^{power}")
+        else:
+            if coef < 0:
+                parts.append(f"- {format_number(abs(coef))} * X^{power}")
+            else:
+                parts.append(f"+ {coef_text} * X^{power}")
+
+    if not parts:
+        return "0 * X^0"
+
+    return " ".join(parts)
+
+
+def main():
+    if len(sys.argv) == 2:
+        equation = sys.argv[1]
+    else:
+        equation = input()
+
+    if equation.count("=") != 1:
         print("Syntax error: equation must contain exactly one '='")
         return
-    
+
     left, right = equation.split("=")
 
     if left.strip() == "" or right.strip() == "":
         print("Syntax error: empty side")
         return
 
-    print("Equation:", equation)
-    print("Left side:", left.strip())
-    print("Right side:", right.strip())
+    left_poly = parse_side(left)
+    right_poly = parse_side(right)
 
-    # for i in range(len(left)):
-    #     print(parse_term(left[i]))
-        
+    reduced = reduce_equation(left_poly, right_poly)
 
-    left_poly = {}
-    right_poly = {}
+    # degree = get_degree(reduced)
 
-   
+    # print("Reduced form:", format_polynomial(reduced), "= 0")
+    # print("Polynomial degree:", degree)
+
+    # if degree > 2:
+    #     print("The polynomial degree is strictly greater than 2, I can't solve.")
+
+
 if __name__ == "__main__":
     main()
-
