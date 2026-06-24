@@ -30,7 +30,7 @@ def parse_side(side):
         poly[power] = poly.get(power, 0) + coef
         # poly.get(power, 0) used to get the existing key value without crashing if the key doesn't exist, and add the coefficient to it.
         # print(f"poly.get(power, 0): {poly.get(power, 0)}, coef: {coef}, power: {power}")
-        print(f"Current polynomial: {poly}")
+        # print(f"Current polynomial: {poly}")
         
 
     return poly
@@ -51,47 +51,55 @@ def reduce_equation(left_poly, right_poly):
     print(f"Reduced polynomial: {reduced}")
     return reduced
 
-
 def get_degree(poly):
     degree = 0
 
-    for power, coef in poly.items():
+    for power in poly:
+        coef = poly[power]
+
         if coef != 0 and power > degree:
             degree = power
 
     return degree
 
+def print_reduced_form(poly):
 
-def format_number(number):
-    if number == int(number):
-        return str(int(number))
-    return str(number)
-
-
-def format_polynomial(poly):
-    parts = []
+    mathematical_expression = ""
 
     for power in sorted(poly.keys()):
         coef = poly[power]
 
-        if coef == 0 and len(poly) > 1:
+        if coef == 0:
             continue
-
-        coef_text = format_number(coef)
-
-        if not parts:
-            parts.append(f"{coef_text} * X^{power}")
+        elif mathematical_expression == "":
+            mathematical_expression += f"{coef} * X^{power}"
+        elif coef > 0:
+            mathematical_expression += f" + {coef} * X^{power}"
         else:
-            if coef < 0:
-                parts.append(f"- {format_number(abs(coef))} * X^{power}")
-            else:
-                parts.append(f"+ {coef_text} * X^{power}")
+            mathematical_expression += f" - {abs(coef)} * X^{power}"
 
-    if not parts:
-        return "0 * X^0"
+    print(f"Reduced form: {mathematical_expression} = 0")
 
-    return " ".join(parts)
 
+
+def solve_degree_0(poly):
+    c = poly.get(0, 0)
+
+    if c == 0:
+        print("Any real number is a solution.")
+    else:
+        print("No solution.")
+
+
+
+def solve_degree_1(poly):
+    c = poly.get(0, 0)
+    b = poly.get(1, 0)
+
+    solution = -c / b
+
+    print("The solution is:")
+    print(solution)
 
 def main():
     if len(sys.argv) == 2:
@@ -113,15 +121,18 @@ def main():
     right_poly = parse_side(right)
 
     reduced = reduce_equation(left_poly, right_poly)
+    print_reduced_form(reduced)
 
-    # degree = get_degree(reduced)
-
-    # print("Reduced form:", format_polynomial(reduced), "= 0")
-    # print("Polynomial degree:", degree)
-
-    # if degree > 2:
-    #     print("The polynomial degree is strictly greater than 2, I can't solve.")
-
-
+    print(f"Polynomial degree: {get_degree(reduced)}")
+    
+    degree = get_degree(reduced) 
+    if degree == 0:
+        solve_degree_0(reduced)
+    elif degree == 1:
+        solve_degree_1(reduced)
+    elif degree == 2:
+        print("Degree 2 solving next")
+    else:
+        print("The polynomial degree is strictly greater than 2, I can't solve.")
 if __name__ == "__main__":
     main()
