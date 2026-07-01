@@ -28,10 +28,7 @@ def parse_side(side):
 
         power, coef = parse_term(term)
         poly[power] = poly.get(power, 0) + coef
-        # poly.get(power, 0) used to get the existing key value without crashing if the key doesn't exist, and add the coefficient to it.
-        # print(f"poly.get(power, 0): {poly.get(power, 0)}, coef: {coef}, power: {power}")
-        # print(f"Current polynomial: {poly}")
-        
+      
 
     return poly
 
@@ -101,6 +98,33 @@ def solve_degree_1(poly):
     print("The solution is:")
     print(solution)
 
+def solve_degree_2(poly):
+    a = poly.get(2, 0)
+    b = poly.get(1, 0)
+    c = poly.get(0, 0)
+
+    discriminant = b**2 - 4*a*c
+
+    print(f"Discriminant: {discriminant}")
+
+    if discriminant > 0:
+        root1 = (-b + discriminant**0.5) / (2*a)
+        root2 = (-b - discriminant**0.5) / (2*a)
+        print("Discriminant is strictly positive, the two solutions are:")
+        print(root1)
+        print(root2)
+    elif discriminant == 0:
+        root = -b / (2*a)
+        print("Discriminant is zero, the solution is:")
+        print(root)
+    else:
+        real_part = -b / (2*a)
+        imaginary_part = (abs(discriminant)**0.5) / (2*a)
+        print("Discriminant is strictly negative, the two complex solutions are:")
+        print(f"{real_part} + {imaginary_part}i") # i is the imaginary unit, which is defined as the square root of -1.
+        print(f"{real_part} - {imaginary_part}i")
+
+
 def main():
     if len(sys.argv) == 2:
         equation = sys.argv[1]
@@ -131,7 +155,7 @@ def main():
     elif degree == 1:
         solve_degree_1(reduced)
     elif degree == 2:
-        print("Degree 2 solving next")
+        solve_degree_2(reduced)
     else:
         print("The polynomial degree is strictly greater than 2, I can't solve.")
 if __name__ == "__main__":
