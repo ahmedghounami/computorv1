@@ -50,7 +50,7 @@ def reduce_equation(left_poly, right_poly):
             reduced[power] = reduced[power] - right_poly[power]
         else:
             reduced[power] = -right_poly[power]
-    print(f"Reduced polynomial: {reduced}")
+    # print(f"Reduced polynomial: {reduced}")
     return reduced
 
 def get_degree(poly):
@@ -64,14 +64,18 @@ def get_degree(poly):
 
     return degree
 
+def format_number(number):
+    if number == int(number):
+        return int(number)
+    return number
+
+
 def print_reduced_form(poly):
 
     mathematical_expression = ""
 
     for power in sorted(poly.keys()):
-        coef = poly[power]
-        if coef == int(coef):
-            coef = int(coef)
+        coef = format_number(poly[power])
 
         if coef == 0:
             continue
@@ -105,6 +109,7 @@ def solve_degree_1(poly):
     print("The solution is:")
     print(solution)
 
+
 def solve_degree_2(poly):
     a = poly.get(2, 0)
     b = poly.get(1, 0)
@@ -115,21 +120,19 @@ def solve_degree_2(poly):
     print(f"Discriminant: {discriminant}")
 
     if discriminant > 0:
-        root1 = (-b + discriminant**0.5) / (2*a)
-        root2 = (-b - discriminant**0.5) / (2*a)
+        root1 = (-b - discriminant**0.5) / (2*a)
+        root2 = (-b + discriminant**0.5) / (2*a)
         print("Discriminant is strictly positive, the two solutions are:")
-        print(root1)
-        print(root2)
+        print(f"{format_number(root1):.6f}")
+        print(f"{format_number(root2):.6f}")
     elif discriminant == 0:
         root = -b / (2*a)
         print("Discriminant is zero, the solution is:")
-        print(root)
+        print(f"{format_number(root):.6f}")
     else:
-        real_part = -b / (2*a)
-        imaginary_part = (abs(discriminant)**0.5) / (2*a)
         print("Discriminant is strictly negative, the two complex solutions are:")
-        print(f"{real_part} + {imaginary_part}i") # i is the imaginary unit, which is defined as the square root of -1.
-        print(f"{real_part} - {imaginary_part}i")
+        print(f"{format_number(-b):.6f} / {format_number(2*a):.6f} + {format_number((abs(discriminant)**0.5)):.6f}i/{format_number(2*a):.6f}")
+        print(f"{format_number(-b):.6f} / {format_number(2*a):.6f} - {format_number((abs(discriminant)**0.5)):.6f}i/{format_number(2*a):.6f}")
 
 
 def main():
