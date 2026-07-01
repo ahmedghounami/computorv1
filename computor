@@ -3,8 +3,13 @@ import sys
 
 
 def parse_term(term):
-    coef_part, x_part = term.split("*")
+    # print(f"Parsing term: {term}")
+    if "*" not in term:
+        coef = float(term.replace(" ", ""))
+        power = 0
+        return power, coef
 
+    coef_part, x_part = term.split("*")
     coef_part = coef_part.strip().replace(" ", "")
     coef = float(coef_part)
 
@@ -25,7 +30,7 @@ def parse_side(side):
 
         if term == "":
             continue
-
+    
         power, coef = parse_term(term)
         poly[power] = poly.get(power, 0) + coef
       
@@ -65,6 +70,8 @@ def print_reduced_form(poly):
 
     for power in sorted(poly.keys()):
         coef = poly[power]
+        if coef == int(coef):
+            coef = int(coef)
 
         if coef == 0:
             continue
