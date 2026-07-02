@@ -1,6 +1,46 @@
 #!/usr/bin/env python3
 import sys
 
+def is_valid_term(term):
+    term = term.strip()
+    print(f"Validating term: {term}")
+    if "*" not in term:
+        try:
+            float(term)
+            return True
+        except ValueError:
+            return False
+
+    if term.count("*") != 1:
+        return False
+
+    coef_part, x_part = term.split("*")
+
+    coef_part = coef_part.strip()
+    x_part = x_part.strip()
+
+    try:
+        float(coef_part)
+    except ValueError:
+        return False
+
+    if not x_part.startswith("X"):
+        return False
+
+    if x_part.count("^") != 1:
+        return False
+
+    variable, power = x_part.split("^")
+
+    if variable != "X":
+        return False
+
+    try:
+        int(power)
+    except ValueError:
+        return False
+
+    return True
 
 def parse_term(term):
     # print(f"Parsing term: {term}")
@@ -30,6 +70,9 @@ def parse_side(side):
 
         if term == "":
             continue
+        if not is_valid_term(term):
+            print(f"Syntax error: '{term}'")
+            exit(1)
     
         power, coef = parse_term(term)
         poly[power] = poly.get(power, 0) + coef
@@ -67,15 +110,14 @@ def get_degree(poly):
 def format_number(number):
     if number == int(number):
         return int(number)
-    return number
-
+    return f"{number:.6f}".rstrip("0").rstrip(".")
 
 def print_reduced_form(poly):
 
     mathematical_expression = ""
 
     for power in sorted(poly.keys()):
-        coef = format_number(poly[power])
+        coef = poly[power]
 
         if coef == 0:
             continue
@@ -123,23 +165,26 @@ def solve_degree_2(poly):
         root1 = (-b - discriminant**0.5) / (2*a)
         root2 = (-b + discriminant**0.5) / (2*a)
         print("Discriminant is strictly positive, the two solutions are:")
-        print(f"{format_number(root1):.6f}")
-        print(f"{format_number(root2):.6f}")
+        print(f"{format_number(root1)}")
+        print(f"{format_number(root2)}")
     elif discriminant == 0:
         root = -b / (2*a)
         print("Discriminant is zero, the solution is:")
-        print(f"{format_number(root):.6f}")
+        print(f"{format_number(root)}")
     else:
         print("Discriminant is strictly negative, the two complex solutions are:")
-        print(f"{format_number(-b):.6f} / {format_number(2*a):.6f} + {format_number((abs(discriminant)**0.5)):.6f}i/{format_number(2*a):.6f}")
-        print(f"{format_number(-b):.6f} / {format_number(2*a):.6f} - {format_number((abs(discriminant)**0.5)):.6f}i/{format_number(2*a):.6f}")
+        print(f"{format_number(-b)} / {format_number(2*a)} + {format_number((abs(discriminant)**0.5))}i/{format_number(2*a)}")
+        print(f"{format_number(-b)} / {format_number(2*a)} - {format_number((abs(discriminant)**0.5))}i/{format_number(2*a)}")
 
 
 def main():
+    equation = ""
     if len(sys.argv) == 2:
         equation = sys.argv[1]
     else:
-        equation = input()
+        print("Usage: python computor.py \"equation\"")
+        return
+
 
     if equation.count("=") != 1:
         print("Syntax error: equation must contain exactly one '='")
