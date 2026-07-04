@@ -3,9 +3,10 @@ import sys
 
 def is_valid_term(term):
     term = term.strip()
-    # print(f"Validating term: {term}")
+    print(f"Validating term: {term}")
     if "*" not in term:
         try:
+            term = term.strip().replace(" ", "")
             float(term)
             return True
         except ValueError:
@@ -18,7 +19,7 @@ def is_valid_term(term):
 
     coef_part = coef_part.strip().replace(" ", "")
     x_part = x_part.strip().replace(" ", "")
-    print(f"Coefficient part: {coef_part}, X part: {x_part}")
+    # print(f"Coefficient part: {coef_part}, X part: {x_part}")
 
     try:
         float(coef_part)
@@ -40,6 +41,9 @@ def is_valid_term(term):
         int(power)
     except ValueError:
         return False
+    
+    if int(power) < 0:
+        return False
 
     return True
 
@@ -54,7 +58,7 @@ def parse_term(term):
     coef_part = coef_part.strip().replace(" ", "")
     coef = float(coef_part)
 
-    x_part = x_part.strip()
+    x_part = x_part.strip().replace(" ","")
     power = int(x_part.split("^")[1])
 
     return power, coef
@@ -151,8 +155,29 @@ def solve_degree_1(poly):
     solution = -c / b
 
     print("The solution is:")
-    print(solution)
+    print(format_number(solution))
 
+
+def gcd(a, b):
+    a = abs(int(a))
+    b = abs(int(b))
+
+    while b != 0:
+        a, b = b, a % b
+
+    return a
+
+def reduce_fraction(numerator, denominator):
+    divisor = gcd(numerator, denominator)
+
+    numerator //= divisor
+    denominator //= divisor
+
+    if denominator < 0:
+        numerator *= -1
+        denominator *= -1
+
+    return numerator, denominator
 
 def solve_degree_2(poly):
     a = poly.get(2, 0)
@@ -161,7 +186,7 @@ def solve_degree_2(poly):
 
     discriminant = b**2 - 4*a*c
 
-    print(f"Discriminant: {discriminant}")
+    # print(f"Discriminant: {discriminant}")
 
     if discriminant > 0:
         root1 = (-b - discriminant**0.5) / (2*a)
@@ -174,10 +199,10 @@ def solve_degree_2(poly):
         print("Discriminant is zero, the solution is:")
         print(f"{format_number(root)}")
     else:
-        print("Discriminant is strictly negative, the two complex solutions are:")
-        print(f"{format_number(-b)} / {format_number(2*a)} + {format_number((abs(discriminant)**0.5))}i/{format_number(2*a)}")
-        print(f"{format_number(-b)} / {format_number(2*a)} - {format_number((abs(discriminant)**0.5))}i/{format_number(2*a)}")
-
+        real_num, real_den = reduce_fraction(int(-b), int(2 * a))
+        imag_num, imag_den = reduce_fraction(int(abs(discriminant) ** 0.5), int(2 * a))
+        print(f"{real_num}/{real_den} + {imag_num}i/{imag_den}")
+        print(f"{real_num}/{real_den} - {imag_num}i/{imag_den}")
 
 def main():
     equation = ""
