@@ -2,67 +2,65 @@
 import sys
 
 def is_valid_term(term):
-    term = term.strip()
-    print(f"Validating term: {term}")
-    if "*" not in term:
-        try:
-            term = term.strip().replace(" ", "")
-            float(term)
-            return True
-        except ValueError:
-            return False
+    term = term.strip().replace(" ", "")
 
-    if term.count("*") != 1:
+    if term == "":
         return False
 
-    coef_part, x_part = term.split("*")
-
-    coef_part = coef_part.strip().replace(" ", "")
-    x_part = x_part.strip().replace(" ", "")
-    # print(f"Coefficient part: {coef_part}, X part: {x_part}")
-
-    try:
-        float(coef_part)
-    except ValueError:
-        return False
-
-    if not x_part.startswith("X"):
-        return False
-
-    if x_part.count("^") != 1:
-        return False
-
-    variable, power = x_part.split("^")
-
-    if variable != "X":
+    if term.count("*") > 1:
         return False
 
     try:
-        int(power)
-    except ValueError:
+        parse_term(term)
+        return True
+    except:
         return False
-    
-    if int(power) < 0:
-        return False
-
-    return True
 
 def parse_term(term):
-    # print(f"Parsing term: {term}")
-    if "*" not in term:
-        coef = float(term.replace(" ", ""))
+    term = term.strip().replace(" ", "")
+
+    # Case: simple number => 5 means 5 * X^0
+    if "X" not in term:
+        coef = float(term)
         power = 0
         return power, coef
 
-    coef_part, x_part = term.split("*")
-    coef_part = coef_part.strip().replace(" ", "")
-    coef = float(coef_part)
+    # Case: contains X
+    if term.count("X") != 1:
+        raise ValueError("Invalid term")
 
-    x_part = x_part.strip().replace(" ","")
-    power = int(x_part.split("^")[1])
+    before_x, after_x = term.split("X")
+
+    # Find coefficient
+    if before_x == "":
+        coef = 1.0
+    elif before_x == "+":
+        coef = 1.0
+    elif before_x == "-":
+        coef = -1.0
+    else:
+        if before_x.endswith("*"):
+            before_x = before_x[:-1]
+        coef = float(before_x)
+
+    # Find power
+    if after_x == "":
+        power = 1
+    else:
+        if not after_x.startswith("^"):
+            raise ValueError("Invalid term")
+
+        power_text = after_x[1:]
+
+        if power_text == "":
+            raise ValueError("Invalid power")
+
+        power = int(power_text)
+
+        if power < 0:
+            raise ValueError("Negative power")
 
     return power, coef
-
 
 def parse_side(side):
     poly = {}
@@ -157,27 +155,36 @@ def solve_degree_1(poly):
     print("The solution is:")
     print(format_number(solution))
 
-
 def gcd(a, b):
     a = abs(int(a))
     b = abs(int(b))
 
-    while b != 0:
-        a, b = b, a % b
+    smallest = a
 
-    return a
+    if b < a:
+        smallest = b
+
+    greatest_divisor = 1
+
+    i = 1
+    while i <= smallest:
+        if a % i == 0 and b % i == 0:
+            greatest_divisor = i
+        i += 1
+
+    return greatest_divisor
 
 def reduce_fraction(numerator, denominator):
     divisor = gcd(numerator, denominator)
 
-    numerator //= divisor
-    denominator //= divisor
+    new_numerator = numerator // divisor
+    new_denominator = denominator // divisor
 
-    if denominator < 0:
-        numerator *= -1
-        denominator *= -1
+    if new_denominator < 0:
+        new_numerator = -new_numerator
+        new_denominator = -new_denominator
 
-    return numerator, denominator
+    return new_numerator, new_denominator
 
 def solve_degree_2(poly):
     a = poly.get(2, 0)
@@ -199,6 +206,7 @@ def solve_degree_2(poly):
         print("Discriminant is zero, the solution is:")
         print(f"{format_number(root)}")
     else:
+        print("Discriminant is strictly negative, the two complex solutions are:")
         real_num, real_den = reduce_fraction(int(-b), int(2 * a))
         imag_num, imag_den = reduce_fraction(int(abs(discriminant) ** 0.5), int(2 * a))
         print(f"{real_num}/{real_den} + {imag_num}i/{imag_den}")
