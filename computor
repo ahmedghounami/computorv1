@@ -1,6 +1,40 @@
 #!/usr/bin/env python3
 import sys
 
+EPSILON = 0.0000000001
+
+
+def absolute(value):
+    if value < 0:
+        return -value
+    return value
+
+
+def is_zero(value):
+    return absolute(value) < EPSILON
+
+
+def square_root(number):
+    if number < 0:
+        raise ValueError("Cannot calculate the square root of a negative number")
+
+    if number == 0:
+        return 0.0
+
+    if number >= 1:
+        guess = number
+    else:
+        guess = 1.0
+
+    while True:
+        next_guess = (guess + number / guess) / 2
+
+        if absolute(next_guess - guess) < EPSILON:
+            return next_guess
+
+        guess = next_guess
+
+
 def is_valid_term(term):
     term = term.strip().replace(" ", "")
 
@@ -13,26 +47,23 @@ def is_valid_term(term):
     try:
         parse_term(term)
         return True
-    except:
+    except (ValueError, TypeError):
         return False
+
 
 def parse_term(term):
     term = term.strip().replace(" ", "")
 
-    # Case: simple number => 5 means 5 * X^0
     if "X" not in term:
         coef = float(term)
         power = 0
         return power, coef
 
-    # Case: contains X
     if term.count("X") != 1:
         raise ValueError("Invalid term")
 
     before_x, after_x = term.split("X")
-    
 
-    # Find coefficient
     if before_x == "":
         coef = 1.0
     elif before_x == "+":
@@ -42,9 +73,9 @@ def parse_term(term):
     else:
         if before_x.endswith("*"):
             before_x = before_x[:-1]
+
         coef = float(before_x)
 
-    # Find power
     if after_x == "":
         power = 1
     else:
@@ -63,6 +94,7 @@ def parse_term(term):
 
     return power, coef
 
+
 def parse_side(side):
     poly = {}
 
@@ -74,31 +106,31 @@ def parse_side(side):
 
         if term == "":
             continue
+
         if not is_valid_term(term):
             print(f"Syntax error: '{term}'")
             exit(1)
-    
+
         power, coef = parse_term(term)
         poly[power] = poly.get(power, 0) + coef
-      
 
     return poly
 
-def reduce_equation(left_poly, right_poly):
 
+def reduce_equation(left_poly, right_poly):
     reduced = {}
 
     for power in left_poly:
         reduced[power] = left_poly[power]
 
     for power in right_poly:
-
         if power in reduced:
             reduced[power] = reduced[power] - right_poly[power]
         else:
             reduced[power] = -right_poly[power]
-    # print(f"Reduced polynomial: {reduced}")
+
     return reduced
+
 
 def get_degree(poly):
     degree = 0
@@ -106,45 +138,50 @@ def get_degree(poly):
     for power in poly:
         coef = poly[power]
 
-        if coef != 0 and power > degree:
+        if not is_zero(coef) and power > degree:
             degree = power
 
     return degree
 
+
 def format_number(number):
+    if is_zero(number):
+        return 0
+
     if number == int(number):
         return int(number)
+
     return f"{number:.6f}".rstrip("0").rstrip(".")
 
-def print_reduced_form(poly):
 
+def print_reduced_form(poly):
     mathematical_expression = ""
 
     for power in sorted(poly.keys()):
         coef = poly[power]
 
-        if coef == 0:
+        if is_zero(coef):
             continue
         elif mathematical_expression == "":
             mathematical_expression += f"{format_number(coef)} * X^{power}"
         elif coef > 0:
             mathematical_expression += f" + {format_number(coef)} * X^{power}"
         else:
-            mathematical_expression += f" - {format_number(abs(coef))} * X^{power}"
+            mathematical_expression += f" - {format_number(absolute(coef))} * X^{power}"
+
     if mathematical_expression == "":
         mathematical_expression = "0 * X^0"
-    print(f"Reduced form: {mathematical_expression} = 0")
 
+    print(f"Reduced form: {mathematical_expression} = 0")
 
 
 def solve_degree_0(poly):
     c = poly.get(0, 0)
 
-    if c == 0:
+    if is_zero(c):
         print("Any real number is a solution.")
     else:
         print("No solution.")
-
 
 
 def solve_degree_1(poly):
@@ -156,9 +193,10 @@ def solve_degree_1(poly):
     print("The solution is:")
     print(format_number(solution))
 
+
 def gcd(a, b):
-    a = abs(int(a))
-    b = abs(int(b))
+    a = absolute(int(a))
+    b = absolute(int(b))
 
     smallest = a
 
@@ -168,12 +206,15 @@ def gcd(a, b):
     greatest_divisor = 1
 
     i = 1
+
     while i <= smallest:
         if a % i == 0 and b % i == 0:
             greatest_divisor = i
+
         i += 1
 
     return greatest_divisor
+
 
 def reduce_fraction(numerator, denominator):
     divisor = gcd(numerator, denominator)
@@ -187,42 +228,49 @@ def reduce_fraction(numerator, denominator):
 
     return new_numerator, new_denominator
 
+
 def solve_degree_2(poly):
     a = poly.get(2, 0)
     b = poly.get(1, 0)
     c = poly.get(0, 0)
 
-    discriminant = b**2 - 4*a*c
+    discriminant = b * b - 4 * a * c
 
-    # print(f"Discriminant: {discriminant}")
+    if discriminant > EPSILON:
+        discriminant_root = square_root(discriminant)
 
-    if discriminant > 0:
-        root1 = (-b - discriminant**0.5) / (2*a)
-        root2 = (-b + discriminant**0.5) / (2*a)
+        root1 = (-b - discriminant_root) / (2 * a)
+        root2 = (-b + discriminant_root) / (2 * a)
+
         print("Discriminant is strictly positive, the two solutions are:")
-        print(f"{format_number(root1)}")
-        print(f"{format_number(root2)}")
-    elif discriminant == 0:
-        root = -b / (2*a)
-        print("Discriminant is zero, the solution is:")
-        print(f"{format_number(root)}")
-    else:
+        print(format_number(root1))
+        print(format_number(root2))
+
+    elif discriminant < -EPSILON:
+        real_part = -b / (2 * a)
+        imaginary_part = square_root(-discriminant) / absolute(2 * a)
+
         print("Discriminant is strictly negative, the two complex solutions are:")
-        real_num, real_den = reduce_fraction(int(-b), int(2 * a))
-        imag_num, imag_den = reduce_fraction(int(abs(discriminant) ** 0.5), int(2 * a))
-        print(f"{real_num}/{real_den} + {imag_num}i/{imag_den}")
-        print(f"{real_num}/{real_den} - {imag_num}i/{imag_den}")
+        print(f"{format_number(real_part)} + {format_number(imaginary_part)}i")
+        print(f"{format_number(real_part)} - {format_number(imaginary_part)}i")
+
+    else:
+        root = -b / (2 * a)
+
+        print("Discriminant is zero, the solution is:")
+        print(format_number(root))
+
 
 def main():
     equation = ""
+
     if len(sys.argv) == 2:
         equation = sys.argv[1]
     elif len(sys.argv) < 2:
         equation = input("Enter an equation: ")
     elif len(sys.argv) > 2:
-        print("Usage: python computor.py \"equation\"")
+        print('Usage: python computor.py "equation"')
         return
-
 
     if equation.count("=") != 1:
         print("Syntax error: equation must contain exactly one '='")
@@ -240,9 +288,10 @@ def main():
     reduced = reduce_equation(left_poly, right_poly)
     print_reduced_form(reduced)
 
-    print(f"Polynomial degree: {get_degree(reduced)}")
-    
-    degree = get_degree(reduced) 
+    degree = get_degree(reduced)
+
+    print(f"Polynomial degree: {degree}")
+
     if degree == 0:
         solve_degree_0(reduced)
     elif degree == 1:
@@ -251,5 +300,7 @@ def main():
         solve_degree_2(reduced)
     else:
         print("The polynomial degree is strictly greater than 2, I can't solve.")
+
+
 if __name__ == "__main__":
     main()
