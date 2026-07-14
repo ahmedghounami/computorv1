@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 
-EPSILON = 0.000000001 # computers are dumb and can't do math properly
+EPSILON = 0.000000001 
 
 
 def absolute(value):
@@ -53,16 +53,18 @@ def is_valid_term(term):
 
 def parse_term(term):
     term = term.strip().replace(" ", "")
+    
+    term_upper = term.upper()
 
-    if "X" not in term:
+    if "X" not in term_upper:
         coef = float(term)
         power = 0
         return power, coef
 
-    if term.count("X") != 1:
+    if term_upper.count("X") != 1:
         raise ValueError("Invalid term")
 
-    before_x, after_x = term.split("X")
+    before_x, after_x = term_upper.split("X")
 
     if before_x == "":
         coef = 1.0
@@ -188,45 +190,14 @@ def solve_degree_1(poly):
     c = poly.get(0, 0)
     b = poly.get(1, 0)
 
+    print(f"Coefficients: b = {format_number(b)}, c = {format_number(c)}")
+    print(f"Using formula: x = -c/b")
+    
     solution = -c / b
-
-    print("The solution is:")
+    
+    print(f"x = -{format_number(c)}/{format_number(b)} = {format_number(solution)}")
+    print("\nThe solution is:")
     print(format_number(solution))
-
-
-def gcd(a, b):
-    a = absolute(int(a))
-    b = absolute(int(b))
-
-    smallest = a
-
-    if b < a:
-        smallest = b
-
-    greatest_divisor = 1
-
-    i = 1
-
-    while i <= smallest:
-        if a % i == 0 and b % i == 0:
-            greatest_divisor = i
-
-        i += 1
-
-    return greatest_divisor
-
-
-def reduce_fraction(numerator, denominator):
-    divisor = gcd(numerator, denominator)
-
-    new_numerator = numerator // divisor
-    new_denominator = denominator // divisor
-
-    if new_denominator < 0:
-        new_numerator = -new_numerator
-        new_denominator = -new_denominator
-
-    return new_numerator, new_denominator
 
 
 def solve_degree_2(poly):
@@ -234,33 +205,52 @@ def solve_degree_2(poly):
     b = poly.get(1, 0)
     c = poly.get(0, 0)
 
+    print(f"Coefficients: a = {format_number(a)}, b = {format_number(b)}, c = {format_number(c)}")
+    print(f"Discriminant: Δ = b² - 4ac = {format_number(b * b)} - {format_number(4 * a * c)} = {format_number(b * b - 4 * a * c)}")
+    
     discriminant = b * b - 4 * a * c
 
     if discriminant > EPSILON:
         discriminant_root = square_root(discriminant)
-
+        print(f"√Δ = {format_number(discriminant_root)}")
+        
+        print("\nUsing quadratic formula: x = (-b ± √Δ) / 2a")
+        print(f"x₁ = (-({format_number(b)}) - {format_number(discriminant_root)}) / (2 × {format_number(a)})")
         root1 = (-b - discriminant_root) / (2 * a)
+        print(f"x₁ = {format_number(-b - discriminant_root)} / {format_number(2 * a)} = {format_number(root1)}")
+        
+        print(f"\nx₂ = (-({format_number(b)}) + {format_number(discriminant_root)}) / (2 × {format_number(a)})")
         root2 = (-b + discriminant_root) / (2 * a)
+        print(f"x₂ = {format_number(-b + discriminant_root)} / {format_number(2 * a)} = {format_number(root2)}")
 
-        print("Discriminant is strictly positive, the two solutions are:")
+        print("\nDiscriminant is strictly positive, the two solutions are:")
         print(format_number(root1))
         print(format_number(root2))
 
     elif discriminant < -EPSILON:
         print("Discriminant is strictly negative, the two complex solutions are:")
-    
-        real_num, real_den = reduce_fraction(-b, 2 * a)
-        imag_num, imag_den = reduce_fraction(
-            square_root(-discriminant),
-            absolute(2 * a)
+        discriminant_abs_root = square_root(-discriminant)
+        print(f"√|Δ| = {format_number(discriminant_abs_root)}")
+        
+        print("\nUsing quadratic formula: x = (-b ± i√|Δ|) / 2a")
+        
+        real_part = -b / (2 * a)
+        imaginary_part = (
+            discriminant_abs_root
+            / absolute(2 * a)
         )
-    
-        print(f"{format_number(real_num)}/{format_number(real_den)} + {format_number(imag_num)}i/{format_number(imag_den)}")
-        print(f"{format_number(real_num)}/{format_number(real_den)} - {format_number(imag_num)}i/{format_number(imag_den)}")
+        
+        print(f"x₁ = (-({format_number(b)}) - i×{format_number(discriminant_abs_root)}) / (2 × {format_number(a)})")
+        print(f"x₁ = {format_number(real_part)} - {format_number(imaginary_part)}i")
+        
+        print(f"\nx₂ = (-({format_number(b)}) + i×{format_number(discriminant_abs_root)}) / (2 × {format_number(a)})")
+        print(f"x₂ = {format_number(real_part)} + {format_number(imaginary_part)}i")
+        
+        print(f"\n{format_number(real_part)} + {format_number(imaginary_part)}i")
+        print(f"{format_number(real_part)} - {format_number(imaginary_part)}i")
 
     else:
         root = -b / (2 * a)
-
         print("Discriminant is zero, the solution is:")
         print(format_number(root))
 
