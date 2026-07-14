@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys
 
-EPSILON = 0.0000000001
+EPSILON = 0.000000001 # computers are dumb and can't do math properly
 
 
 def absolute(value):
@@ -247,12 +247,16 @@ def solve_degree_2(poly):
         print(format_number(root2))
 
     elif discriminant < -EPSILON:
-        real_part = -b / (2 * a)
-        imaginary_part = square_root(-discriminant) / absolute(2 * a)
-
         print("Discriminant is strictly negative, the two complex solutions are:")
-        print(f"{format_number(real_part)} + {format_number(imaginary_part)}i")
-        print(f"{format_number(real_part)} - {format_number(imaginary_part)}i")
+    
+        real_num, real_den = reduce_fraction(-b, 2 * a)
+        imag_num, imag_den = reduce_fraction(
+            square_root(-discriminant),
+            absolute(2 * a)
+        )
+    
+        print(f"{format_number(real_num)}/{format_number(real_den)} + {format_number(imag_num)}i/{format_number(imag_den)}")
+        print(f"{format_number(real_num)}/{format_number(real_den)} - {format_number(imag_num)}i/{format_number(imag_den)}")
 
     else:
         root = -b / (2 * a)
