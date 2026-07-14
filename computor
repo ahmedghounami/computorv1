@@ -30,6 +30,7 @@ def parse_term(term):
         raise ValueError("Invalid term")
 
     before_x, after_x = term.split("X")
+    
 
     # Find coefficient
     if before_x == "":
